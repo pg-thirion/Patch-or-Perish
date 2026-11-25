@@ -18,7 +18,7 @@ export const cases = [
     "context": "The customer directory accepts a search term.",
     "code": "term = request.args[\"name\"]\nquery = \"SELECT * FROM users WHERE name = '\" + term + \"'\"\nreturn db.execute(query).fetchall()",
     "patches": [
-      "db.execute(\"SELECT * FROM users WHERE name = ?\", (term,))",
+      "return db.execute(\"SELECT * FROM users WHERE name = ?\", (term,)).fetchall()",
       "db.execute(query.lower())",
       "db.execute(query.strip())"
     ],
@@ -35,7 +35,7 @@ export const cases = [
     "context": "A PostgreSQL service reads an invoice by ID.",
     "code": "const id = req.query.id;\nconst rows = await pool.query(\n  \"SELECT * FROM invoices WHERE id = \" + id\n);",
     "patches": [
-      "await pool.query(\"SELECT * FROM invoices WHERE id = $1\", [id])",
+      "const rows = await pool.query(\"SELECT * FROM invoices WHERE id = $1\", [id]);",
       "await pool.query(\"SELECT * FROM invoices WHERE id = \" + encodeURI(id))",
       "await pool.query(\"SELECT * FROM invoices WHERE id = \" + id.trim())"
     ],
@@ -154,7 +154,7 @@ export const cases = [
     "context": "A service accepts signed access tokens issued by its identity provider.",
     "code": "const claims = jwt.decode(req.headers.authorization.slice(7));\nreq.user = claims.sub;",
     "patches": [
-      "const claims = jwt.verify(token, trustedPublicKey, {\n  algorithms: [\"RS256\"], issuer: ISSUER, audience: AUDIENCE\n});\nrequireValidExpiryAndSubject(claims);\nreq.user = claims.sub;",
+      "const token = req.headers.authorization.slice(7);\nconst claims = jwt.verify(token, trustedPublicKey, {\n  algorithms: [\"RS256\"], issuer: ISSUER, audience: AUDIENCE\n});\nrequireValidExpiryAndSubject(claims);\nreq.user = claims.sub;",
       "const claims = jwt.decode(token);\nif (claims.sub) req.user = claims.sub;",
       "req.user = JSON.parse(atob(token.split(\".\")[1])).sub;"
     ],

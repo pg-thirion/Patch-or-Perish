@@ -16,11 +16,11 @@ A dependency-free secure coding training game. Diagnose a fictional vulnerabilit
 
 ## Test
 
-Node 22 or later: `npm test`. Tests cover challenge integrity, selection, answer shuffling, scoring, hints and incomplete runs. Browser end-to-end tests are not included.
+Node 22 or later: `npm test`. Tests cover challenge integrity, selection, answer shuffling, scoring, hints and incomplete runs. The browser suite uses Chromium through its DevTools protocol, without npm dependencies. Run `npm run test:browser` with Chromium or Chrome installed (`CHROME_BIN` may specify the binary). GitHub Actions runs both suites before preparing the Pages artifact.
 
 ## Deploy
 
-Enable GitHub Pages in Settings > Pages, choose Deploy from a branch, main and / (root). Alternatively deploy as a static site on any host. No build command or backend is needed.
+In Settings > Pages, select **GitHub Actions** as the source. The release workflow tests the game and deploys an allowlisted static artifact on pushes to `main` or manual dispatch. The first deployment requires Pages to be enabled by a repository administrator. Alternatively deploy as a static site on any host. No backend is needed.
 
 ## Security and limitations
 

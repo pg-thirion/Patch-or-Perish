@@ -1,10 +1,11 @@
 {
   "name": "patch-or-perish",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test",
+    "test": "node --test engine.test.js",
+    "test:browser": "node tests/browser.mjs",
     "start": "python -m http.server 8000"
   }
 }
