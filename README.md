@@ -1,5 +1,7 @@
 # Patch or Perish
 
+**Live demo:** [Play Patch or Perish](https://patch-or-perish-pg-thirion.vercel.app/)
+
 A dependency-free secure coding training game. Diagnose a fictional vulnerability, then select the safest patch. No displayed snippet is executed.
 
 ## Features
