@@ -101,11 +101,78 @@ try{
  await click("End mission");ok((await text()).includes("What is the vulnerability?"),"Cancel end");
  await evaluate("window.confirm=()=>true");await click("End mission");eq(await heading(),"Mission ended","End mission");
  await click("New mission");await click("Clear local progress");ok(!(await text()).includes("Recent missions"),"Clear history");
+
+ // Learning centre, filters, bookmarks and individual challenge launches.
+ await click("Challenge library");eq(await heading(),"Challenge library","Library page");
+ eq(await evaluate("document.querySelectorAll('.library-results article').length"),24,"All library cases");
+ await evaluate("(()=>{const x=document.querySelector('input[type=search]');x.value='CWE-89';x.dispatchEvent(new Event('input',{bubbles:true}));})()");
+ eq(await evaluate("document.querySelectorAll('.library-results article').length"),3,"CWE search");
+ await value("Library category",groups[0]);await value("Library difficulty",3);
+ eq(await evaluate("document.querySelectorAll('.library-results article').length"),1,"Library filters combine");
+ await value("Library category",groups[1]);ok((await text()).includes("No matching challenges"),"Empty library state");
+ await value("Library category",groups[0]);await click("Bookmark challenge");
+ await value("Library view","bookmarks");eq(await evaluate("document.querySelectorAll('.library-results article').length"),1,"Bookmark filter");
+ await click("Play challenge");const chosen=cases.find(c=>c.category===groups[0]&&c.level===3);
+ eq(await heading(),chosen.title,"Single challenge launch");
+ await selectText(chosen.category);await click("Lock diagnosis");await click("Change diagnosis");
+ eq(await evaluate("document.querySelectorAll('.option[aria-pressed=true]').length"),1,"Diagnosis retained on back");
+ await click("Lock diagnosis");await selectText(chosen.patches[0]);await click("Apply patch");await click("View mission report");
+ ok((await text()).includes("Elapsed:"),"Report elapsed statistics");
+ await value("Review filter","correct");eq(await evaluate("document.querySelectorAll('.review details').length"),1,"Correct review filter");
+ await click("Expand reviews");eq(await evaluate("document.querySelectorAll('.review details[open]').length"),1,"Expand reviews");
+ await click("Collapse reviews");eq(await evaluate("document.querySelectorAll('.review details[open]').length"),0,"Collapse reviews");
+ await value("Review filter","missed");ok((await text()).includes("No challenges match"),"Missed review empty");
+ await send("Browser.setDownloadBehavior",{behavior:"allow",downloadPath:dir});
+ await click("Download report");
+ const report=await until(async()=>JSON.parse(await readFile(join(dir,"patch-or-perish-report.json"),"utf8")),"Report download");
+ eq(report.score,100,"Downloaded report score");eq(report.challenges[0].id,chosen.id,"Downloaded report case");
+ await click("Replay mission");eq(await heading(),chosen.title,"Replay same case");
+ await click("Skip challenge");ok((await text()).includes("Challenge skipped"),"Skip feedback");await click("View mission report");
+ await value("Review filter","unanswered");eq(await evaluate("document.querySelectorAll('.review details').length"),0,"Skipped not unanswered");
+ await value("Review filter","missed");eq(await evaluate("document.querySelectorAll('.review details').length"),1,"Skipped in missed filter");
+ await click("Retry missed challenges");eq(await heading(),chosen.title,"Retry missed case");
+ await click("Skip challenge");await click("View mission report");await click("New mission");
+ ok((await text()).includes("First patch · Unlocked"),"Achievement persists");
+ ok((await text()).includes("Category mastery"),"Mastery dashboard");
+ eq(await evaluate("document.querySelectorAll('.mastery-item').length"),8,"Category progress");
+ await value("Game mode","weak");ok((await text()).includes("1 challenges available"),"Weak mode selection");
+ await click("Start mission");eq(await heading(),chosen.title,"Weak case selected");await click("Skip challenge");await click("View mission report");await click("New mission");
+ await value("Game mode","bookmarks");ok((await text()).includes("1 challenges available"),"Bookmarks mode selection");
+ await click("Start mission");eq(await heading(),chosen.title,"Bookmarked case selected");await click("Remove bookmark");await click("Skip challenge");await click("View mission report");await click("New mission");
+ await value("Game mode","bookmarks");eq(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Start mission').disabled"),true,"No bookmarks disables start");
+ await value("Game mode","survival");await value("Mission size",4);await click("Start mission");
+ for(let i=0;i<3;i++){await click("Skip challenge");ok((await text()).includes("STRIKES "+(i+1)+"/3"),"Survival strike");await click(i===2?"View mission report":"Next challenge");}
+ eq(await heading(),"Survival ended","Survival stops after three strikes");
+ await value("Review filter","unanswered");eq(await evaluate("document.querySelectorAll('.review details').length"),1,"Unanswered review");
+ await click("New mission");await value("Game mode","daily");
+ eq(await evaluate("[...document.querySelectorAll('label')].find(x=>x.firstChild.textContent==='Vulnerability family').querySelector('select').disabled"),true,"Daily filters locked");
+ const daily=[];
+ await click("Start mission");
+ for(let i=0;i<3;i++){const title=await heading(),c=cases.find(c=>c.title===title);daily.push(title);await selectText(c.category);await click("Lock diagnosis");await selectText(c.patches[0]);await click("Apply patch");ok((await text()).includes("STREAK "+(i+1)),"Live streak");await click(i===2?"View mission report":"Next challenge");}
+ await click("New mission");ok((await text()).includes("Daily defender · Unlocked"),"Daily achievement");
+ await value("Game mode","daily");ok((await text()).includes("Daily challenge completed"),"Daily completion indicator");await click("Start mission");eq(await heading(),daily[0],"Daily deterministic replay");
+ await click("Pause mission");eq(await heading(),"Mission paused","Pause hides challenge");await click("Resume mission");eq(await heading(),daily[0],"Resume preserves challenge");
+ await click("Skip challenge");await click("Next challenge");await click("Skip challenge");await click("Next challenge");await click("Skip challenge");await click("View mission report");await click("New mission");
+ await click("Security glossary");eq(await heading(),"Security glossary","Glossary page");eq(await evaluate("document.querySelectorAll('main details').length"),8,"All glossary terms");eq(await evaluate("document.querySelectorAll('main a').length"),2,"Reference links");await click("Back to home");
+ await click("Settings");await value("Appearance","light");await value("Text size","largest");await value("Code layout","scroll");await value("Timed mission duration",60);
+ eq(await evaluate("document.documentElement.dataset.theme"),"light","Light theme");
+ eq(await evaluate("document.documentElement.dataset.font"),"largest","Text scale");eq(await evaluate("document.documentElement.dataset.wrap"),"scroll","Code scroll setting");
+ await value("Appearance","contrast");eq(await evaluate("document.documentElement.dataset.theme"),"contrast","High contrast");
+ await click("Back to home");await go();eq(await evaluate("document.documentElement.dataset.theme"),"contrast","Settings persist");
+ await value("Game mode","timed");await click("Start mission");eq(await evaluate("document.querySelector('#clock').textContent"),"01:00","Custom timer");await fits();
+ await click("Pause mission");await evaluate("window.originalNow=Date.now;Date.now=()=>window.originalNow()+120000");await click("Resume mission");ok((await text()).includes("01:00")||(await text()).includes("00:59"),"Pause freezes timer");
+ await evaluate("Date.now=window.originalNow");await click("Skip challenge");await click("Next challenge");
+ // End without a native modal in the test.
+ await evaluate("window.confirm=()=>true");await click("End mission");await click("New mission");
+ await click("Settings");await click("Restore default settings");eq(await evaluate("document.documentElement.dataset.theme"),"dark","Restore defaults");eq(await evaluate("document.documentElement.dataset.font"),"normal","Restore font");await click("Back to home");
+ await click("Clear local progress");ok((await text()).includes("MASTERED0/24"),"Clear resets mastery");
+ await evaluate("localStorage.setItem('patch-or-perish-learning-v2','{invalid')");
+
  await evaluate("localStorage.setItem('patch-or-perish-v1','{invalid')");
  await go();ok(!(await text()).includes("Recent missions"),"Corrupt storage recovery");
  await send("Page.addScriptToEvaluateOnNewDocument",{source:"Object.defineProperty(window,'localStorage',{get(){throw new Error('Storage unavailable')}})"});
  await go();await click("Start mission");ok((await text()).includes("What is the vulnerability?"),"Unavailable storage does not block play");
- ok(network.every(u=>u.startsWith(url)||u.startsWith("data:")||u==="about:blank"),"No external requests");
+ ok(network.every(u=>u.startsWith(url)||u.startsWith("data:")||u.startsWith("blob:"+url.split("/Patch-or-Perish/")[0])||u==="about:blank"),"No external requests");
  eq(errors.length,0,"No uncaught browser errors: "+errors.join("; "));
  console.log("Browser checks passed: "+checks+" assertions");
 }catch(e){console.error(e);process.exitCode=1;}
