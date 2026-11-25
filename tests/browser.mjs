@@ -43,7 +43,7 @@ const text=()=>evaluate("document.querySelector('main').textContent");
 async function go(){await send("Page.navigate",{url});await until(async()=>await heading()==="Every line is a decision.","home");}
 async function key(key,code,vk){await send("Input.dispatchKeyEvent",{type:"keyDown",key,code,windowsVirtualKeyCode:vk});await send("Input.dispatchKeyEvent",{type:"keyUp",key,code,windowsVirtualKeyCode:vk});}
 async function viewport(w,h){await send("Emulation.setDeviceMetricsOverride",{width:w,height:h,deviceScaleFactor:1,mobile:false});}
-async function fits(){ok(await evaluate("document.documentElement.scrollWidth<=innerWidth"),"No horizontal overflow");}
+async function fits(){const layout=await evaluate("({width:innerWidth,scroll:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll(\"main *, header *, footer *\")].filter(x=>x.getBoundingClientRect().right>innerWidth+1).slice(0,8).map(x=>x.tagName+\":\"+x.className)})");ok(layout.scroll<=layout.width,"No horizontal overflow: "+JSON.stringify(layout));}
 try{
  chrome=spawn(process.env.CHROME_BIN||"google-chrome",["--headless=new","--no-sandbox","--disable-dev-shm-usage","--disable-background-networking","--disable-extensions","--no-first-run","--no-default-browser-check","--remote-debugging-port=0","--user-data-dir="+dir,"about:blank"],{stdio:["ignore","ignore","pipe"]});
  chrome.stderr.on("data",b=>{chromeError=(chromeError+b).slice(-2500);});
