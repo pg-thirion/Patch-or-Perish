@@ -16,14 +16,14 @@ A dependency-free secure coding training game. Diagnose a fictional vulnerabilit
 
 ## Test
 
-Node 22 or later: `npm test`. Tests cover challenge integrity, selection, answer shuffling, scoring, hints and incomplete runs. The browser suite uses Chromium through its DevTools protocol, without npm dependencies. Run `npm run test:browser` with Chromium or Chrome installed (`CHROME_BIN` may specify the binary). GitHub Actions runs both suites before preparing the Pages artifact.
+Node 22 or later: `npm test`. Tests cover challenge integrity, selection, answer shuffling, scoring, hints and incomplete runs. The browser suite uses Chromium through its DevTools protocol, without npm dependencies. Run `npm run test:browser` with Chromium or Chrome installed (`CHROME_BIN` may specify the binary). GitHub Actions runs both suites on every push to main and pull request.
 
 ## Deploy
 
-In Settings > Pages, select **GitHub Actions** as the source. The release workflow tests the game and deploys an allowlisted static artifact on pushes to `main` or manual dispatch. The first deployment requires Pages to be enabled by a repository administrator. Alternatively deploy as a static site on any host. No backend is needed.
+Import this repository into Vercel using the Other framework preset. The included vercel.json runs the unit tests and copies only the public assets into dist. Production deployments use main. GitHub Actions independently runs the Chromium regression suite.
 
 ## Security and limitations
 
-Snippets are illustrative, not production implementations. Example secrets are fictional. All snippet rendering uses textContent. Scores and answers reside client-side and are not suitable for high-stakes assessments. Browser history uses localStorage, not a server. The CSP disables network connections and inline scripts. Some deployment headers, such as frame-ancestors, must be configured at the hosting layer.
+Snippets are illustrative, not production implementations. Example secrets are fictional. All snippet rendering uses textContent. Scores and answers reside client-side and are not suitable for high-stakes assessments. Browser history uses localStorage, not a server. The CSP disables network connections and inline scripts. Vercel also sends CSP, frame restrictions, nosniff, referrer and permissions policy headers. No runtime functions are needed.
 
 Reference: https://cwe.mitre.org/ and https://cheatsheetseries.owasp.org/.
