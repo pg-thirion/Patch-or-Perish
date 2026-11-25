@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { cases, groups } from "../cases.js";
 const root=fileURLToPath(new URL("../",import.meta.url));
-const types={"index.html":"text/html","app.js":"text/javascript","engine.js":"text/javascript","cases.js":"text/javascript","styles.css":"text/css","icon.svg":"image/svg+xml"};
+const types={"index.html":"text/html","app.js":"text/javascript","engine.js":"text/javascript","learning.js":"text/javascript","cases.js":"text/javascript","styles.css":"text/css","icon.svg":"image/svg+xml"};
 const prefix="/Patch-or-Perish/";
 const server=createServer(async(req,res)=>{
  const pathname=new URL(req.url,"http://localhost").pathname;

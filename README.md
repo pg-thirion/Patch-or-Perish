@@ -10,6 +10,10 @@ A dependency-free secure coding training game. Diagnose a fictional vulnerabilit
 - Mission filtering, configurable challenge counts, partial credit, debriefs and local score history.
 - Responsive keyboard-accessible interface. No accounts, external requests, tracking or API keys.
 
+## Version 2 learning features
+
+Daily missions, three-strike survival, weak-spot and bookmarked missions, per-case bookmarks, searchable challenge library with category/difficulty/status filters and individual launches, persistent mastery and XP, ranks, achievements, category mastery bars, accuracy statistics, live and best streaks, custom timed duration, pause/resume, skip, change diagnosis, retry missed challenges, replay missions, filtered/expandable reviews, JSON report downloads, theme/text-size/code-layout settings and an eight-topic glossary. Daily missions use the local calendar and all progression remains device-local. Pause is permitted in timed practice; scores are not competitive or tamper-proof.
+
 ## Run
 
 `python -m http.server 8000` from the repository root, then visit http://localhost:8000. ES modules require HTTP rather than opening the file directly.
